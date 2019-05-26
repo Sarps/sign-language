@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="ie=edge" http-equiv="X-UA-Compatible">
+    <title>Document</title>
+    <link href='css/fonts.css' rel="stylesheet">
+    <link href="css/vuetify.min.css" rel="stylesheet">
+    <script src="js/vendor/vue.js"></script>
+    <script src="js/vendor/vuetify.min.js"></script>
+    <style>
+        .v-content__wrap, .v-card {
+            background-color: rgba(255, 255, 255, 0.3) !important;
+        }
+
+        .v-content {
+            background: url('../images/wood.jpg');
+            background-size: cover;
+            background-position: center center;
+        }
+
+        *:not(.material-icons) {
+            font-family: Quicksand !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <v-app>
+            <v-toolbar app color="primary" dark>
+                <v-avatar size="36px">
+                    <img src="./images/logo.jpg" alt="Avatar">
+                </v-avatar>
+                <v-spacer></v-spacer>
+                <v-toolbar-title>SignTalk</v-toolbar-title>
+                <v-spacer></v-spacer>
+                <v-btn icon @click="drawer = !drawer"><v-icon>more_vert</v-icon></v-btn>
+            </v-toolbar>
+            <v-content app>
+                <v-container>
+                    <v-layout row>
+                        <v-flex sm12>
+                            <v-text-field box label="Incoming Word" readonly v-model="word" dark></v-text-field>
+                        </v-flex>
+                    </v-layout>
+                    <v-card class="mx-auto mb-3" flat style="min-height: 300px; max-height: 500px; overflow: scroll;">
+                        <v-card-title class="display-1">Total Sentence</v-card-title>
+                        <p class="px-3 py-3" :style="font_size">{{total}}</p>
+                        <v-layout row style="position: absolute; width: 100%; bottom: 0;">
+                            <v-spacer></v-spacer>
+                            <v-btn small @click="text= ''">Clear
+                            <v-icon small right>clear_all</v-icon></v-btn>
+                        </v-layout>
+                    </v-card>
+                    <v-layout row>
+                        <v-flex sm6>
+                            <v-btn :disabled="listening" :loading="connecting" @click="startReceiving" color="primary">Start Listening</v-btn>
+                        </v-flex>
+                        <v-flex sm6>
+                            <v-btn @click="readSentence" color="accent">Read Sentence</v-btn>
+                        </v-flex>
+                    </v-layout>
+                </v-container>
+            </v-content>
+            <v-navigation-drawer v-model="drawer" right app :width="400" touchless>
+                <v-card flat>
+                        <v-toolbar dense color="accent">
+                            <v-btn icon @click="drawer = false"><v-icon>arrow_back</v-icon></v-btn>
+                            <v-icon large left small>settings</v-icon>
+                            <v-spacer></v-spacer>
+                            <span class="title font-weight-light">Settings</span>
+                            <v-spacer></v-spacer>
+                        </v-toolbar>
+
+                    <v-card-body>
+                        <v-container>
+                            <v-divider></v-divider>
+                            <v-layout row>
+                                <v-flex xs12>
+                                    <v-subheader class="pl-0">Font Size</v-subheader>
+                                    <v-slider v-model="font" thumb-color="red" thumb-label="always"></v-slider>
+                                </v-flex>
+                            </v-layout>
+                            <v-divider></v-divider>
+                            <v-layout row>
+                                <v-flex xs12>
+                                    <v-subheader class="pl-0">Volume</v-subheader>
+                                    <v-slider append-icon="volume_up" thumb-label="always" prepend-icon="volume_down" v-model="volume" :max="1" :min="0" :step="0.01"></v-slider>
+                                </v-flex>
+                            </v-layout>
+                            <v-divider></v-divider>
+                            <v-layout row>
+                                <v-flex xs12>
+                                    <v-subheader class="pl-0">Pitch</v-subheader>
+                                    <v-slider append-icon="forward_30" thumb-label="always" prepend-icon="forward_5" v-model="pitch" :max="2" :min="0" :step="0.01"></v-slider>
+                                </v-flex>
+                            </v-layout>
+                            <v-divider></v-divider>
+                            <v-layout row>
+                                <v-flex xs12>
+                                    <v-subheader class="pl-0">Voices</v-subheader>
+                                    <v-select
+                                            :items="voiceIds"
+                                            label="Voices"
+                                            v-model="voice"
+                                    ></v-select>
+                                </v-flex>
+                            </v-layout>
+                            <v-divider></v-divider>
+                        </v-container>
+                    </v-card-body>
+
+                    <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn color="error">Reset</v-btn>
+                    </v-card-actions>
+                </v-card>
+            </v-navigation-drawer>
+        </v-app>
+    </div>
+</body>
+<script src="js/socket.io.min.js"></script>
+<script>
+
+    var socket = io('http://192.168.43.52:5000');
+
+    let app = new Vue({
+
+        el: '#app',
+
+        data: {
+            text: "I watched the storm, so beautiful yet terrific",
+            word: "",
+            listening: false,
+            connecting: false,
+            volume: 0.5,
+            font: 25,
+            pitch: 1,
+            drawer: null,
+            voices: [],
+            voice: null
+        },
+
+        async mounted() {
+            this.voices = await this.getVoices();
+            let voice = this.voices[0];
+            this.voice = `${voice.name} ${voice.lang}`
+        },
+
+        computed: {
+            total() {
+                return `${this.text} ${this.word}`;
+            },
+
+            font_size() {
+                return `font-size: ${this.font}px`;
+            },
+
+            voiceIndex() {
+                return this.voiceIds.indexOf(this.voice);
+            },
+
+            voiceIds() {
+                return this.voices.map(voice => `${voice.name} ${voice.lang}` )
+            }
+        },
+
+        methods: {
+
+            startReceiving() {
+
+                this.connecting = true;
+
+                socket.on('connect', function(){
+                    app.listening = true;
+                    app.connecting = false;
+                    console.log('connect!')
+                });
+
+                socket.on('sign', async function(msg){
+                    app.listening = true;
+                    app.connecting = false;
+                    console.log('sign!', msg)
+                    if (msg === "space") {
+                        if (!app.word.length) return;
+                        app.text += ` ${app.word}`;
+                        await app.speak(app.word);
+                        app.word = "";
+                    } else {
+                        app.word += msg;
+                    }
+                });
+
+                socket.on('disconnect', function(){
+                    app.listening = false;
+                    console.log('disconnect!')
+                });
+            },
+
+            async readSentence() {
+                await app.speak(this.total);
+            },
+
+            speak(text) {
+                if (!speechSynthesis) {
+                    return
+                }
+                const message = new SpeechSynthesisUtterance(text);
+                message.voice = this.getCurrentVoice();
+                message.pitch = app.pitch;
+                message.volume = app.volume;
+                speechSynthesis.speak(message)
+            },
+
+            async getVoices() {
+                return new Promise(resolve => {
+                    let voices = speechSynthesis.getVoices();
+                    if (voices.length) {
+                        resolve(voices);
+                        return
+                    }
+                    speechSynthesis.onvoiceschanged = () => {
+                        voices = speechSynthesis.getVoices();
+                        resolve(voices)
+                    }
+                })
+            },
+
+            getCurrentVoice() {
+                return this.voices[this.voiceIndex];
+            }
+        }
+    });
+
+</script>
+
+</html>
