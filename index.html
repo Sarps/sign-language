@@ -77,7 +77,6 @@
 
                     <v-card-text>
                         <v-container>
-                            <v-divider></v-divider>
                             <v-layout row>
                                 <v-flex xs12>
                                     <v-subheader class="pl-0">Font Size</v-subheader>
@@ -104,9 +103,15 @@
                                     <v-subheader class="pl-0">Voices</v-subheader>
                                     <v-select
                                             :items="voiceIds"
-                                            label="Voices"
                                             v-model="voice"
                                     ></v-select>
+                                </v-flex>
+                            </v-layout>
+                            <v-divider></v-divider>
+                            <v-layout row>
+                                <v-flex xs12>
+                                    <v-subheader class="pl-0">Device IP ( Optional )</v-subheader>
+                                    <v-text-field box v-model="ip" mask="### . ### . ### . ###"></v-text-field>
                                 </v-flex>
                             </v-layout>
                             <v-divider></v-divider>
@@ -142,7 +147,7 @@
             drawer: null,
             voices: [],
             voice: null,
-            ip: '192.168.43.52'
+            ip: '192.168.043.052'
         },
 
         async mounted() {
