@@ -11,7 +11,8 @@
     <script src="./js/vendor/vue.js"></script>
     <script src="./js/vendor/vuetify.min.js"></script>
     <style>
-        .v-content__wrap, .v-card {
+        .v-content__wrap,
+        .v-card {
             background-color: rgba(255, 255, 255, 0.3) !important;
         }
 
@@ -37,7 +38,9 @@
                 <v-spacer></v-spacer>
                 <v-toolbar-title>SignTalk</v-toolbar-title>
                 <v-spacer></v-spacer>
-                <v-btn icon @click="drawer = !drawer"><v-icon>more_vert</v-icon></v-btn>
+                <v-btn icon @click="drawer = !drawer">
+                    <v-icon>more_vert</v-icon>
+                </v-btn>
             </v-toolbar>
             <v-content app>
                 <v-container>
@@ -52,12 +55,14 @@
                         <v-layout row style="position: absolute; width: 100%; bottom: 0;">
                             <v-spacer></v-spacer>
                             <v-btn small @click="text= ''">Clear
-                            <v-icon small right>clear_all</v-icon></v-btn>
+                                <v-icon small right>clear_all</v-icon>
+                            </v-btn>
                         </v-layout>
                     </v-card>
                     <v-layout row>
                         <v-flex sm6>
-                            <v-btn :disabled="listening" :loading="connecting" @click="startReceiving" color="primary">Start Listening</v-btn>
+                            <v-btn :disabled="listening" :loading="connecting" @click="startReceiving" color="primary">
+                                Start Listening</v-btn>
                         </v-flex>
                         <v-flex sm6>
                             <v-btn @click="readSentence" color="accent">Read Sentence</v-btn>
@@ -67,13 +72,15 @@
             </v-content>
             <v-navigation-drawer v-model="drawer" right app :width="400" touchless>
                 <v-card flat>
-                        <v-toolbar dense color="accent">
-                            <v-btn icon @click="drawer = false"><v-icon>arrow_back</v-icon></v-btn>
-                            <v-icon large left small>settings</v-icon>
-                            <v-spacer></v-spacer>
-                            <span class="title font-weight-light">Settings</span>
-                            <v-spacer></v-spacer>
-                        </v-toolbar>
+                    <v-toolbar dense color="accent">
+                        <v-btn icon @click="drawer = false">
+                            <v-icon>arrow_back</v-icon>
+                        </v-btn>
+                        <v-icon large left small>settings</v-icon>
+                        <v-spacer></v-spacer>
+                        <span class="title font-weight-light">Settings</span>
+                        <v-spacer></v-spacer>
+                    </v-toolbar>
 
                     <v-card-text>
                         <v-container>
@@ -87,24 +94,23 @@
                             <v-layout row>
                                 <v-flex xs12>
                                     <v-subheader class="pl-0">Volume</v-subheader>
-                                    <v-slider append-icon="volume_up" thumb-label="always" prepend-icon="volume_down" v-model="volume" :max="1" :min="0" :step="0.01"></v-slider>
+                                    <v-slider append-icon="volume_up" thumb-label="always" prepend-icon="volume_down"
+                                        v-model="volume" :max="1" :min="0" :step="0.01"></v-slider>
                                 </v-flex>
                             </v-layout>
                             <v-divider></v-divider>
                             <v-layout row>
                                 <v-flex xs12>
                                     <v-subheader class="pl-0">Pitch</v-subheader>
-                                    <v-slider append-icon="forward_30" thumb-label="always" prepend-icon="forward_5" v-model="pitch" :max="2" :min="0" :step="0.01"></v-slider>
+                                    <v-slider append-icon="forward_30" thumb-label="always" prepend-icon="forward_5"
+                                        v-model="pitch" :max="2" :min="0" :step="0.01"></v-slider>
                                 </v-flex>
                             </v-layout>
                             <v-divider></v-divider>
                             <v-layout row>
                                 <v-flex xs12>
                                     <v-subheader class="pl-0">Voices</v-subheader>
-                                    <v-select
-                                            :items="voiceIds"
-                                            v-model="voice"
-                                    ></v-select>
+                                    <v-select :items="voiceIds" v-model="voice"></v-select>
                                 </v-flex>
                             </v-layout>
                             <v-divider></v-divider>
@@ -130,120 +136,126 @@
 <script src="./js/socket.io.min.js"></script>
 <script>
 
-    let socket;
+    try {
 
-    let app = new Vue({
+        let socket;
 
-        el: '#app',
+        let app = new Vue({
 
-        data: {
-            text: "",
-            word: "",
-            listening: false,
-            connecting: false,
-            volume: 0.5,
-            font: 25,
-            pitch: 1,
-            drawer: null,
-            voices: [],
-            voice: null,
-            ip: '192.168.043.052'
-        },
+            el: '#app',
 
-        async mounted() {
-            alert(!speechSynthesis);
-            this.voices = await this.getVoices();
-            alert(this.voices.length);
-            let voice = this.voices[0];
-            this.voice = `${voice.name} ${voice.lang}`
-        },
-
-        computed: {
-            total() {
-                return `${this.text} ${this.word}`;
+            data: {
+                text: "",
+                word: "",
+                listening: false,
+                connecting: false,
+                volume: 0.5,
+                font: 25,
+                pitch: 1,
+                drawer: null,
+                voices: [],
+                voice: null,
+                ip: '192.168.043.052'
             },
 
-            font_size() {
-                return `font-size: ${this.font}px`;
+            async mounted() {
+                alert(!speechSynthesis);
+                this.voices = await this.getVoices();
+                alert(this.voices.length);
+                let voice = this.voices[0];
+                this.voice = `${voice.name} ${voice.lang}`
             },
 
-            voiceIndex() {
-                return this.voiceIds.indexOf(this.voice);
-            },
+            computed: {
+                total() {
+                    return `${this.text} ${this.word}`;
+                },
 
-            voiceIds() {
-                return this.voices.map(voice => `${voice.name} ${voice.lang}` )
-            }
-        },
+                font_size() {
+                    return `font-size: ${this.font}px`;
+                },
 
-        methods: {
+                voiceIndex() {
+                    return this.voiceIds.indexOf(this.voice);
+                },
 
-            startReceiving() {
-
-                this.connecting = true;
-
-                socket = io(`http://${this.ip}:5000`);
-
-                socket.on('connect', function(){
-                    app.listening = true;
-                    app.connecting = false;
-                    console.log('connect!')
-                });
-
-                socket.on('sign', async function(msg){
-                    app.listening = true;
-                    app.connecting = false;
-                    console.log('sign!', msg)
-                    if (msg === "space") {
-                        if (!app.word.length) return;
-                        app.text += ` ${app.word}`;
-                        await app.speak(app.word);
-                        app.word = "";
-                    } else {
-                        app.word += msg;
-                    }
-                });
-
-                socket.on('disconnect', function(){
-                    app.listening = false;
-                    console.log('disconnect!')
-                });
-            },
-
-            async readSentence() {
-                await app.speak(this.total);
-            },
-
-            speak(text) {
-                if (!speechSynthesis) {
-                    return
+                voiceIds() {
+                    return this.voices.map(voice => `${voice.name} ${voice.lang}`)
                 }
-                const message = new SpeechSynthesisUtterance(text);
-                message.voice = this.getCurrentVoice();
-                message.pitch = app.pitch;
-                message.volume = app.volume;
-                speechSynthesis.speak(message)
             },
 
-            async getVoices() {
-                return new Promise(resolve => {
-                    let voices = speechSynthesis.getVoices();
-                    if (voices.length) {
-                        resolve(voices);
+            methods: {
+
+                startReceiving() {
+
+                    this.connecting = true;
+
+                    socket = io(`http://${this.ip}:5000`);
+
+                    socket.on('connect', function () {
+                        app.listening = true;
+                        app.connecting = false;
+                        console.log('connect!')
+                    });
+
+                    socket.on('sign', async function (msg) {
+                        app.listening = true;
+                        app.connecting = false;
+                        console.log('sign!', msg)
+                        if (msg === "space") {
+                            if (!app.word.length) return;
+                            app.text += ` ${app.word}`;
+                            await app.speak(app.word);
+                            app.word = "";
+                        } else {
+                            app.word += msg;
+                        }
+                    });
+
+                    socket.on('disconnect', function () {
+                        app.listening = false;
+                        console.log('disconnect!')
+                    });
+                },
+
+                async readSentence() {
+                    await app.speak(this.total);
+                },
+
+                speak(text) {
+                    if (!speechSynthesis) {
                         return
                     }
-                    speechSynthesis.onvoiceschanged = () => {
-                        voices = speechSynthesis.getVoices();
-                        resolve(voices)
-                    }
-                })
-            },
+                    const message = new SpeechSynthesisUtterance(text);
+                    message.voice = this.getCurrentVoice();
+                    message.pitch = app.pitch;
+                    message.volume = app.volume;
+                    speechSynthesis.speak(message)
+                },
 
-            getCurrentVoice() {
-                return this.voices[this.voiceIndex];
+                async getVoices() {
+                    return new Promise(resolve => {
+                        let voices = speechSynthesis.getVoices();
+                        if (voices.length) {
+                            resolve(voices);
+                            return
+                        }
+                        speechSynthesis.onvoiceschanged = () => {
+                            voices = speechSynthesis.getVoices();
+                            resolve(voices)
+                        }
+                    })
+                },
+
+                getCurrentVoice() {
+                    return this.voices[this.voiceIndex];
+                }
             }
-        }
-    });
+        });
+        
+    } catch (e) {
+        alert(JSON.stringify(e, 4))
+    }
 
 </script>
 
