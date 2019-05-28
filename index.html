@@ -136,8 +136,6 @@
 <script src="./js/socket.io.min.js"></script>
 <script>
 
-    try {
-
         let socket;
 
         let app = new Vue({
@@ -167,6 +165,7 @@
             },
 
             computed: {
+
                 total() {
                     return `${this.text} ${this.word}`;
                 },
@@ -182,6 +181,7 @@
                 voiceIds() {
                     return this.voices.map(voice => `${voice.name} ${voice.lang}`)
                 }
+
             },
 
             methods: {
@@ -252,10 +252,6 @@
                 }
             }
         });
-        
-    } catch (e) {
-        alert(JSON.stringify(e, 4))
-    }
 
 </script>
 
