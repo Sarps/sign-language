@@ -117,7 +117,7 @@
                             <v-layout row>
                                 <v-flex xs12>
                                     <v-subheader class="pl-0">Device IP ( Optional )</v-subheader>
-                                    <v-text-field box v-model="ip" mask="### . ### . ### . ###"></v-text-field>
+                                    <v-text-field box v-model="ip"></v-text-field>
                                 </v-flex>
                             </v-layout>
                             <v-divider></v-divider>
@@ -153,13 +153,11 @@
                 drawer: null,
                 voices: [],
                 voice: null,
-                ip: '192.168.043.052'
+                ip: '192.168.43.52'
             },
 
             async mounted() {
-                alert(!speechSynthesis);
                 this.voices = await this.getVoices();
-                alert(this.voices.length);
                 let voice = this.voices[0];
                 this.voice = `${voice.name} ${voice.lang}`
             },
