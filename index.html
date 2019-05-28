@@ -151,7 +151,9 @@
         },
 
         async mounted() {
+            alert(!speechSynthesis);
             this.voices = await this.getVoices();
+            alert(this.voices.length);
             let voice = this.voices[0];
             this.voice = `${voice.name} ${voice.lang}`
         },
