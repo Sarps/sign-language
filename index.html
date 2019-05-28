@@ -157,9 +157,11 @@
             },
 
             async mounted() {
-                this.voices = await this.getVoices();
-                let voice = this.voices[0];
-                this.voice = `${voice.name} ${voice.lang}`
+                this.getVoices().then(voices => {
+                    app.voices = voices;
+                    let voice = app.voices[0];
+                    app.voice = `${voice.name} ${voice.lang}`
+                });
             },
 
             computed: {
@@ -203,7 +205,7 @@
                         if (msg === "space") {
                             if (!app.word.length) return;
                             app.text += ` ${app.word}`;
-                            await app.speak(app.word);
+                            app.speak(app.word);
                             app.word = "";
                         } else {
                             app.word += msg;
@@ -217,7 +219,7 @@
                 },
 
                 async readSentence() {
-                    await app.speak(this.total);
+                    app.speak(this.total);
                 },
 
                 speak(text) {
@@ -231,7 +233,7 @@
                     speechSynthesis.speak(message)
                 },
 
-                async getVoices() {
+                getVoices() {
                     return new Promise(resolve => {
                         let voices = speechSynthesis.getVoices();
                         if (voices.length) {
